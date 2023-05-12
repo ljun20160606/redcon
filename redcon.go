@@ -753,6 +753,15 @@ func NewReader(rd io.Reader) *Reader {
 	}
 }
 
+func (rd *Reader) Reset(r io.Reader) {
+	rd.rd.Reset(r)
+	rd.start = 0
+	rd.end = 0
+	if rd.cmds != nil {
+		rd.cmds = rd.cmds[:0]
+	}
+}
+
 func parseInt(b []byte) (int, bool) {
 	if len(b) == 1 && b[0] >= '0' && b[0] <= '9' {
 		return int(b[0] - '0'), true
