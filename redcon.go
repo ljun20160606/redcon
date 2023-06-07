@@ -738,11 +738,21 @@ func (w *Writer) WriteAny(v interface{}) {
 
 // Reader represent a reader for RESP or telnet commands.
 type Reader struct {
-	rd    *bufio.Reader
-	buf   []byte
-	start int
-	end   int
-	cmds  []Command
+	RawReader bool
+	rd        io.Reader
+	buf       []byte
+	start     int
+	end       int
+	cmds      []Command
+}
+
+// NewRawReader returns a command reader which will read RESP or telnet commands.
+func NewRawReader(rd io.Reader) *Reader {
+	return &Reader{
+		RawReader: true,
+		rd:        rd,
+		buf:       make([]byte, 4096),
+	}
 }
 
 // NewReader returns a command reader which will read RESP or telnet commands.
@@ -754,7 +764,11 @@ func NewReader(rd io.Reader) *Reader {
 }
 
 func (rd *Reader) Reset(r io.Reader) {
-	rd.rd.Reset(r)
+	if rd.RawReader {
+		rd.rd = r
+	} else {
+		rd.rd.(*bufio.Reader).Reset(r)
+	}
 	rd.start = 0
 	rd.end = 0
 	if rd.cmds != nil {
