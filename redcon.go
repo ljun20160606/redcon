@@ -555,10 +555,25 @@ func (dc *detachedConn) ReadCommand() (Command, error) {
 
 // Command represent a command
 type Command struct {
+	// a cache of base cmd
+	lowerBaseCmd string
 	// Raw is a encoded RESP message.
 	Raw []byte
 	// Args is a series of arguments that make up the command.
 	Args [][]byte
+}
+
+// LowerBaseCommand Thread unsafe
+func (cmd *Command) LowerBaseCommand() string {
+	if len(cmd.Args) == 0 {
+		return ""
+	}
+	if len(cmd.lowerBaseCmd) != 0 {
+		return cmd.lowerBaseCmd
+	}
+
+	cmd.lowerBaseCmd = strings.ToLower(string(cmd.Args[0]))
+	return cmd.lowerBaseCmd
 }
 
 // Server defines a server for clients for managing client connections.
